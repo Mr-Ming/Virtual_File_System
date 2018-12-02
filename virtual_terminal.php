@@ -3,7 +3,7 @@
 require "classes/fileSystem.php";
 
 $fs = new FileSystem();
-/*
+
 $fs->mkdir('usr');
 
 $fs->cd('usr');
@@ -19,13 +19,13 @@ echo $fs->pwd() . "\n";
 $fs->mkdir('/local');
 $fs->mkdir('/usr/food');
 $fs->rmdir('/usr/orange/red');
-$fs->cd('..');
+$fs->cd('../');
 echo $fs->pwd() . "\n";
 $fs->rmdir('/usr/orange/red');
 
-$fs->dumpFileSystem();*/
+$fs->dumpFileSystem();
+/*
 $fs = new FileSystem();
-$fs->mkdir('usr');
 $fs->cd('usr');
 $fs->mkdir('local');
 $fs->cd('local');
@@ -35,5 +35,5 @@ $fs->mkdir('share');
 $fs->mkdir('share/info');
 $fs->cd('share/info');
 echo $fs->pwd();
-
+*/
 ?>

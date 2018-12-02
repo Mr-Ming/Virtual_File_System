@@ -20,6 +20,7 @@ class FileSystem
 	const ERROR_PATH_DOES_NOT_EXIST = "Error: '%s' path does not exist in the file system \n";
 	const ERROR_CANNOT_REMOVE_SAME_DIRECTORY_YOUR_IN = "Error: cannot remove directory that you are currently in \n";
 	const ERROR_CANNOT_REMOVE_NON_EXISTANCE_DIRECTORY = "Error: cannot remove directory that doesn't exist \n";
+	const ERROR_INVALID_DIRECTORY_PATH_FOUND = "Error: directory path can only contain alphabetic and '/' characters \n";
 
 	const NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE = "Error: we current support either '..' (backtrace) or non-backtracing, we do not support mixing of these 2 \n";
 
@@ -59,9 +60,7 @@ class FileSystem
 		if (strpos($path, '..') !== false) {
 			//	Check if we are doing back-tracing
 			//	Also check if its doing a mix of back-tracing and not-backtracing
-			preg_match('/(.*[a-zA-Z].*)/', $path, $matches);
-
-			if (count($matches) >= 1) {
+			if (preg_match('/(.*[a-zA-Z].*)/', $path)) {
 				echo self::NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE;
 				return false;
 			}
@@ -115,6 +114,11 @@ class FileSystem
 
 	public function mkdir($path)
 	{	
+		//	Check if path contains other characters that not alphabetic nor '/'
+		if (preg_match('/[^a-zA-Z\/]/', $path)) {
+			echo self::ERROR_INVALID_DIRECTORY_PATH_FOUND;
+		}
+
 		$absolute_path = $this->getAbsolutePath($path);
 		$is_exist = $this->doesPathExist($absolute_path);
 
