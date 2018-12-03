@@ -91,6 +91,7 @@ class VirtualTerminal {
 
 	public function executeHelp() {
 		$this->displayMessage('The following command are supported:');
+		$this->displayMessage('help : show all supported commands');
 		$this->displayMessage('pwd : show current path');
 		$this->displayMessage('mkdir(directory) : create new directory');
 		$this->displayMessage('rmdir(directory) : remove existing directory');
