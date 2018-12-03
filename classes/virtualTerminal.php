@@ -27,6 +27,7 @@ class VirtualTerminal {
 	const DIRECTOR_CREATED = "Directory created %s";
 	const DIRECTOR_REMOVED = "Directory removed %s";
 	const SYMLINK_SUCCESS = "Symlink %s is successfully set";
+	const SYMLINK_REMOVED = "Symlink %s is successfully removed";
 	const CURRENT_PATH_CHANGED = "Current Path successfully changed";
 	const FILE_ADDED = "File %s successfully added";
 	const NO_FILE_FOUND_IN_CURRENT_DIRECTORY = 'No file found in current directory';
