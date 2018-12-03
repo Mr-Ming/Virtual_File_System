@@ -191,5 +191,4 @@ class VirtualTerminal {
 		echo ">> {$message} \n";
 	}
 }
-
 ?>

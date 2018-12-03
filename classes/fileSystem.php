@@ -36,7 +36,6 @@ class FileSystem {
 
   const NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE = "Error: we current support either '..' (backtrace) or non-backtracing, we do not support mixing of these 2";
 
-
   const SYMLINK_ALIAS = 'alias';
   const SYMLINK_ABSOLUTE_PATH = 'absolute_path';
 
