@@ -11,6 +11,10 @@ class VirtualTerminal {
 	const INPUT_RMDIR = 'rmdir';
 	const INPUT_SYMLINK = 'symli';
 	const INPUT_REMOVE_SYMLINK = 'remov';
+	const INPUT_ADD_FILE = 'addfi';
+	const INPUT_DELETE_FILE = 'delfi';
+	const INPUT_LIST_FILE_BY_FOLDER = 'listf';
+	const INPUT_LIST_FILE_IN_CURRENT_DIRECTORY = 'list';
 	const INPUT_DUMP_FILE_SYSTEM = 'dump';
 	const INPUT_QUIT = 'quit';
 
@@ -20,12 +24,14 @@ class VirtualTerminal {
 	const ERROR_INVALID_SYNTAX_FOR_RMDIR = 'Invalid Syntax for `rmdir`, correct syntax is rmdir(path)';
 	const ERROR_INVALID_SYNTAX_FOR_SYMLINK = 'Invalid Syntax for `symlink`, correct syntax is symlink(source, dest)';
 	const ERROR_INVALID_SYNTAX_FOR_REMOVE_SYMLINK = 'Invalid Syntax for `removeSymlink`, correct syntax is removeSymLink(link)';
+	const ERROR_INVALID_SYNTAX_FOR_ADD_FILE = 'Invalid Syntax for `addfile`, correct syntax is addfile(file)';
 
 	const DIRECTOR_CREATED = "Directory created %s";
 	const DIRECTOR_REMOVED = "Directory removed %s";
 	const SYMLINK_SUCCESS = "Symlink %s is successfully set";
 	const SYMLINK_REMOVED = "Symlink %s is successfully removed";
 	const CURRENT_PATH_CHANGED = "Current Path successfully changed";
+	const FILE_ADDED = "File %s successfully added";
 
 	private $file_system = null;
 
@@ -61,6 +67,9 @@ class VirtualTerminal {
 			case self::INPUT_REMOVE_SYMLINK:
 				$this->executeRemoveSymlink($input);
 				break;
+			case self::INPUT_ADD_FILE:
+				$this->executeAddFile($input);
+				break;
 			case self::INPUT_DUMP_FILE_SYSTEM:
 				$this->executeDumpFileSystem();
 				break;
@@ -81,6 +90,7 @@ class VirtualTerminal {
 		$this->displayMessage('cd(path) : change location to specified path');
 		$this->displayMessage('symlink(source, dest) : add symlink');
 		$this->displayMessage('removeSymlink(link) : remove symlink');
+		$this->displayMessage('addfile(file) : add file to current directory');
 		$this->displayMessage('dump : For debugging, dump the current file_system memory');
 		$this->displayMessage('quit : Exit virtual terminal');
 	}
@@ -167,6 +177,18 @@ class VirtualTerminal {
 		}
 		
 		$this->displayMessage(sprintf(self::SYMLINK_REMOVED, $argument[0]));
+	}
+
+	public function executeAddFile($input) {
+		$argument = $this->getArgument($input);
+		
+		var_dump($argument);
+		if(count($argument) !== 1 || $argument[0] === '') {
+			return $this->displayMessage(self::ERROR_INVALID_SYNTAX_FOR_ADD_FILE);
+		}
+
+		$this->file_system->addFile($argument[0]);
+		$this->displayMessage(sprintf(self::FILE_ADDED, $argument[0]));
 	}
 
 	public function executeDumpFileSystem() {

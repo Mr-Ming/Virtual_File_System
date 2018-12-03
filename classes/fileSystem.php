@@ -46,7 +46,10 @@ class FileSystem {
           "usr" => [
             "share" => [
               "info" => [
-                "doc.txt"
+                [0] => "doc.txt",
+                [info_detail] => [
+
+                ]
               ]
             ]
           ]
@@ -240,6 +243,12 @@ class FileSystem {
     }
 
     unset($this->sym_links[$link]);
+  }
+
+  public function addFile($file) {
+    $array_index_for_path = $this->getArrayIndexFromPath($this->current_path);
+    $code = '$this->file_system'.$array_index_for_path."[]={$file};";
+    eval($code);
   }
 
   public function dumpFileSystem() {
