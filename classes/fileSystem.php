@@ -256,7 +256,7 @@ class FileSystem {
     }
 
     $array_index_for_path = $this->getArrayIndexFromPath($this->current_path);
-    $code = '$this->file_system'.$array_index_for_path."[]={$file};";
+    $code = '$this->file_system'.$array_index_for_path."[]='{$file}';";
     eval($code);
   }
 
