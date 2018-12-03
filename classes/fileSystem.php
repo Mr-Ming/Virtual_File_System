@@ -25,17 +25,16 @@ class FileSystem {
   //  (a) do we create /usr/share/foo? or
   //  (b) do try to create /usr/share/want which is already created so it will throw an error?
 
-  const ERROR_DIRECTORY_ALREADY_EXIST = "Error: '%s' directory already exist \n";
-  const ERROR_PATH_DOES_NOT_EXIST = "Error: '%s' path does not exist in the file system \n";
-  const ERROR_CANNOT_REMOVE_SAME_DIRECTORY_YOUR_IN = "Error: cannot remove directory that you are currently in \n";
-  const ERROR_CANNOT_REMOVE_NON_EXISTANCE_DIRECTORY = "Error: cannot remove directory that doesn't exist \n";
-  const ERROR_INVALID_DIRECTORY_PATH_FOUND = "Error: directory path can only contain alphabetic and '/' characters \n";
-  const ERROR_SYMLINK_SOURCE_DIRECTORY_NOT_FOUND = "Error: unable to symlink due to source directory not found \n"; 
-  const ERROR_DUPLICATE_SYMLINK = "Error: symlink already exist \n";
-  const ERROR_CANNOT_REMOVE_SYMLINK_NOT_EXIST = "Error: unable to remove symlink due to it can't be found \n";
+  const ERROR_DIRECTORY_ALREADY_EXIST = "Error: '%s' directory already exist";
+  const ERROR_PATH_DOES_NOT_EXIST = "Error: '%s' path does not exist in the file system";
+  const ERROR_CANNOT_REMOVE_SAME_DIRECTORY_YOUR_IN = "Error: cannot remove directory that you are currently in";
+  const ERROR_CANNOT_REMOVE_NON_EXISTANCE_DIRECTORY = "Error: cannot remove directory that doesn't exist";
+  const ERROR_INVALID_DIRECTORY_NAME = "Error: directory path can only contain alphabetic and '/' characters";
+  const ERROR_SYMLINK_SOURCE_DIRECTORY_NOT_FOUND = "Error: unable to symlink due to source directory not found"; 
+  const ERROR_DUPLICATE_SYMLINK = "Error: symlink already exist";
+  const ERROR_CANNOT_REMOVE_SYMLINK_NOT_EXIST = "Error: unable to remove symlink due to it can't be found";
 
-  const NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE = "Error: we current support either '..' (backtrace) or non-backtracing, we do not support mixing of these 2 \n";
-
+  const NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE = "Error: we current support either '..' (backtrace) or non-backtracing, we do not support mixing of these 2";
 
   const SYMLINK_ALIAS = 'alias';
   const SYMLINK_ABSOLUTE_PATH = 'absolute_path';
@@ -82,16 +81,19 @@ class FileSystem {
   }
 
   public function cd($path) {
+
     //  Try loading path from symlink
     $path = $this->loadFromSymlink($path);
 
-    //  If its not symlink then proceed
+    //  Check if we are doing a back-tracing
+    //  notice: were using !== instead of !=
+    //  this is because strpos can return 0 if `..` is found in the [zero-th index]
+    //  0 == false but 0 === false (is false)
     if (strpos($path, '..') !== false) {
       //  Check if we are doing back-tracing
       //  Also check if its doing a mix of back-tracing and not-backtracing
       if (preg_match('/(.*[a-zA-Z].*)/', $path)) {
-        echo self::NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE;
-        return false;
+        throw new Exception(self::NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE);
       }
 
       //  If path is backtracing (..) then adjust the new path
@@ -101,6 +103,12 @@ class FileSystem {
       $number_of_back_trace = count(explode('..', $path)) - 1;
 
       $current_path_array = explode('/', $this->current_path);
+
+      //  Need array_shift 2x here because explode generates 2 empty string at [0] and [1]
+      //  if current_path => '/' means were in root, [0] & [1] will be empty string
+      //  if current_path => '//usr', [0] & [1] will be empty while [2] will be usr
+      array_shift($current_path_array);
+      array_shift($current_path_array);
 
       for($i=0; $i<=$number_of_back_trace; $i++) {
         array_pop($current_path_array);
@@ -116,7 +124,9 @@ class FileSystem {
         return $this->current_path = '/';
       }
 
-      $path = implode("/", $current_path_array);
+      $path = $this->getAbsolutePath("/".implode("/", $current_path_array));
+
+      return $this->current_path = $path;
     }
 
     $path = $this->getAbsolutePath($path);
@@ -128,8 +138,7 @@ class FileSystem {
     eval($code);
 
     if (!$path_exist) {
-      echo sprintf(self::ERROR_PATH_DOES_NOT_EXIST, substr($path, 1));
-      return false;
+      throw new Exception(sprintf(self::ERROR_PATH_DOES_NOT_EXIST, substr($path, 1)));
     }
 
     $this->current_path = $path;
@@ -148,21 +157,24 @@ class FileSystem {
       }
     }
 
-    return substr($path, 1);
+    $result = substr($path, 1);
+
+    //  If result is empty that means were on root path
+    //  In that case, just return '/'
+    return $result === '' ? '/': $result;
   }
 
   public function mkdir($path) {  
     //  Check if path contains other characters that not alphabetic nor '/'
     if (preg_match('/[^a-zA-Z\/]/', $path)) {
-      echo self::ERROR_INVALID_DIRECTORY_PATH_FOUND;
+      throw new Exception(self::ERROR_INVALID_DIRECTORY_NAME);
     }
 
     $absolute_path = $this->getAbsolutePath($path);
 
     //  If directory exist, you cannot create the same one again
     if ($this->doesPathExist($absolute_path)) {
-      echo sprintf(self::ERROR_DIRECTORY_ALREADY_EXIST, $path);
-      return false;
+      throw new Exception(sprintf(self::ERROR_DIRECTORY_ALREADY_EXIST, $path));
     }
 
     $array_index_for_path = $this->getArrayIndexFromPath($absolute_path);
@@ -179,14 +191,12 @@ class FileSystem {
 
     //  If directory exist, you can remove it
     if (!$this->doesPathExist($absolute_path)) {
-      echo sprintf(self::ERROR_CANNOT_REMOVE_NON_EXISTANCE_DIRECTORY, $directory_array[0]);
-      return false;
+      throw new Exception(sprintf(self::ERROR_CANNOT_REMOVE_NON_EXISTANCE_DIRECTORY, $directory_array[0]));
     }
 
     //  Check if your on the directory that your trying to delete
     if ($this->current_path === $absolute_path) {
-      echo self::ERROR_CANNOT_REMOVE_SAME_DIRECTORY_YOUR_IN;
-      return false;
+      throw new Exception(self::ERROR_CANNOT_REMOVE_SAME_DIRECTORY_YOUR_IN);
     }
 
     $array_index_for_path = $this->getArrayIndexFromPath($absolute_path);
@@ -209,14 +219,12 @@ class FileSystem {
 
     //  If directory does not exist, you can't symlink it
     if (!$this->doesPathExist($absolute_path)) {
-      echo self::ERROR_SYMLINK_SOURCE_DIRECTORY_NOT_FOUND;
-      return false;
+      throw new Exception(self::ERROR_SYMLINK_SOURCE_DIRECTORY_NOT_FOUND);
     }
 
     //  If symlink already exist, don't create another one
     if ($this->doesSymlinkExist($source)) {
-      echo self::ERROR_DUPLICATE_SYMLINK;
-      return false;
+      throw new Exception(self::ERROR_DUPLICATE_SYMLINK);
     }
 
     $this->sym_links[$dest] = [
@@ -228,15 +236,14 @@ class FileSystem {
   public function removeSymLink($link) {
     //  Only remove if the symlink actually exist
     if (!isset($this->sym_links[$link])) {
-      echo self::ERROR_CANNOT_REMOVE_SYMLINK_NOT_EXIST;
-      return false;
+      throw new Exception(self::ERROR_CANNOT_REMOVE_SYMLINK_NOT_EXIST);
     }
 
     unset($this->sym_links[$link]);
   }
 
   public function dumpFileSystem() {
-    print_r($this->file_system);
+    return $this->file_system;
   }
 
   private function getAbsolutePath($path) {
