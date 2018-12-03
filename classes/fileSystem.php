@@ -33,7 +33,7 @@ class FileSystem {
   const ERROR_SYMLINK_SOURCE_DIRECTORY_NOT_FOUND = "Error: unable to symlink due to source directory not found"; 
   const ERROR_DUPLICATE_SYMLINK = "Error: symlink already exist";
   const ERROR_CANNOT_REMOVE_SYMLINK_NOT_EXIST = "Error: unable to remove symlink due to it can't be found";
-
+  const ERROR_INVALID_FILE_NAME = "Error: invalid file name";
   const NOT_SUPPORTED_MIXING_BACKTRACE_WITH_NON_BACKTRACE = "Error: we current support either '..' (backtrace) or non-backtracing, we do not support mixing of these 2";
 
   const SYMLINK_ALIAS = 'alias';
@@ -46,7 +46,10 @@ class FileSystem {
           "usr" => [
             "share" => [
               "info" => [
-                "doc.txt"
+                [0] => "doc.txt",
+                [info_detail] => [
+
+                ]
               ]
             ]
           ]
@@ -81,6 +84,10 @@ class FileSystem {
   }
 
   public function cd($path) {
+    //  If path is root then no need to do further operation
+    if ($path === '/') {
+      return $this->current_path = $path;
+    }
 
     //  Try loading path from symlink
     $path = $this->loadFromSymlink($path);
@@ -242,6 +249,62 @@ class FileSystem {
     unset($this->sym_links[$link]);
   }
 
+  public function addFile($file) {
+    //  File name can only be a-Z and '.'
+    if (preg_match('/[^a-zA-Z.]/', $file)) {
+      throw new Exception(self::ERROR_INVALID_FILE_NAME);
+    }
+
+    $array_index_for_path = $this->getArrayIndexFromPath($this->current_path);
+    $code = '$this->file_system'.$array_index_for_path."[]={$file};";
+    eval($code);
+  }
+
+  public function listFilesInGivenPath($path) {
+    if ($path === '/') {
+      $absolute_path = $path;
+    } else {
+      $absolute_path = $this->getAbsolutePath($path);
+
+      //  Check if the given path exist
+      if (!$this->doesPathExist($absolute_path)) {
+        throw new Exception(sprintf(self::ERROR_PATH_DOES_NOT_EXIST, $path));
+      }
+    }
+
+    $array_index_for_path = $this->getArrayIndexFromPath($absolute_path);
+    $code = '$result = $this->file_system'.$array_index_for_path.';';
+    eval($code);
+
+    $files = [];
+    foreach($result as $directory_or_file) {
+      if (!is_array($directory_or_file)) {
+        //  If its not an array, that means its a file
+        //  Only directory is stored as an array
+        $files[] = $directory_or_file;
+      }
+    }
+    
+    return $files;
+  }
+
+  public function listFilesInCurrentPath() {
+    $array_index_for_path = $this->getArrayIndexFromPath($this->current_path);
+    $code = '$result = $this->file_system'.$array_index_for_path.';';
+    eval($code);
+
+    $files = [];
+    foreach($result as $directory_or_file) {
+      if (!is_array($directory_or_file)) {
+        //  If its not an array, that means its a file
+        //  Only directory is stored as an array
+        $files[] = $directory_or_file;
+      }
+    }
+    
+    return $files;
+  }
+
   public function dumpFileSystem() {
     return $this->file_system;
   }
@@ -281,6 +344,7 @@ class FileSystem {
 
     $path_without_root = substr($path, 2);
     $path_array = explode("/", $path_without_root);
+    
     return '["/"]["'.implode('"]["', $path_array).'"]';
   }
 
