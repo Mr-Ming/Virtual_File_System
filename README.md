@@ -53,9 +53,11 @@ This is correct because `veggie` only contains directory and no files, but its c
 1. Adding directory `/usr/picture` then inside it add the file `banana.jpg` 
 
 ![screen shot 2018-12-02 at 11 45 30 pm](https://user-images.githubusercontent.com/2894340/49353553-5e22e680-f68c-11e8-802b-800bb5c5b980.png)
+
 2. cd to root by `cd(/)` then use listc within directory root, `/usr/picture`, then `cd (..)`, and finally listc there
 
 ![screen shot 2018-12-02 at 11 48 35 pm](https://user-images.githubusercontent.com/2894340/49353643-d093c680-f68c-11e8-8533-17a89a38f3b7.png)
+
 3. quit the terminal
 
 ![screen shot 2018-12-02 at 11 49 06 pm](https://user-images.githubusercontent.com/2894340/49353661-df7a7900-f68c-11e8-99cd-6f3a1e386884.png)
