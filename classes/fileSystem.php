@@ -39,30 +39,30 @@ class FileSystem {
   const SYMLINK_ALIAS = 'alias';
   const SYMLINK_ABSOLUTE_PATH = 'absolute_path';
 
-  /**
-      example for path: /usr/share/info/doc.txt
-      $file_system = [
-        "/" => [
-          "usr" => [
-            "share" => [
-              "info" => [
-                [0] => "doc.txt",
-                [info_detail] => [
+  /*
+    example for path: /usr/share/info/doc.txt
+    $file_system = [
+      "/" => [
+        "usr" => [
+          "share" => [
+            "info" => [
+              [0] => "doc.txt",
+              [info_detail] => [
 
-                ]
               ]
             ]
           ]
         ]
-      ];
-  **/
+      ]
+    ];
+  */
   //  NOTE: do NOT change this variable name
   //  Because we use it in the eval() function
   private $file_system = [];
   private $current_path = '';
 
 
-  /**
+  /*
     example for symlink: (/usr/share, bin)
     $sym_links = [
       "bin" => [
@@ -70,7 +70,7 @@ class FileSystem {
         "absolute_path" = //usr/share
       ]
     ];
-  **/
+  */
   private $sym_links = [];
 
   public function __construct() {
